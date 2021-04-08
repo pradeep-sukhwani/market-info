@@ -28,6 +28,8 @@ class StockListView(View):
 
     def get(self, request, *args, **kwargs):
         data = []
+        if not redis_instance.get('last_updated'):
+            get_equity_data()
         redis_last_updated = datetime.strptime(redis_instance.get('last_updated'), '%d/%m/%YT%H:%M:%S')
         current_datetime = datetime.now()
         if current_datetime.hour >= 18 and current_datetime.date() != redis_last_updated.date():
