@@ -1,2 +1,2 @@
-# market_info
-Market information: Bhav
+# market-info
+Bhav Equity Information
