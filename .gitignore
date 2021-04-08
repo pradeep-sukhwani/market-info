@@ -1,0 +1,8 @@
+*.idea
+*.pyc
+*.sqlite3
+media_files/
+*.pyo
+__pycache__/
+dump.rdb
+market_info/custom_settings.py

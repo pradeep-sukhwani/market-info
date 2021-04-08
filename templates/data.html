@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %} Home {% endblock %}
+{% block external_css %}
+    <style type="text/css">
+        #loading-overlay {
+            position: absolute;
+            width: 100%;
+            height:100%;
+            left: 0;
+            top: 0;
+            display: none;
+            align-items: center;
+            background-color: #000;
+            z-index: 999;
+            opacity: 0.5;
+        }
+
+        .loading-icon {
+            position: absolute;
+            border-top: 2px solid #fff;
+            border-right: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+            border-left: 2px solid #767676;
+            border-radius: 25px;
+            width: 25px;
+            height: 25px;
+            margin: 0 auto;
+            left: 50%;
+            margin-left: -20px;
+            top: 50%;
+            margin-top: -20px;
+            z-index: 4;
+            -webkit-animation: spin 1s linear infinite;
+            -moz-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-moz-keyframes spin {
+            100% {
+                -moz-transform: rotate(360deg);
+            }
+        }
+
+        @-webkit-keyframes spin {
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            100% {
+                -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    <div id="loading-overlay">
+        <div class="loading-icon"></div>
+    </div>
+    <nav class="navbar navbar-light bg-light justify-content-between">
+        <a class="navbar-brand" style="font-size: 30px;">Market Info <small style="font-weight: bold; color: red; font-size: 12px;" v-if="lastUpdated">Last Updated: [[ lastUpdated ]]</small></a>
+        <form class="form-inline" v-on:submit="searchStock">
+            <input class="form-control mr-sm-2" v-model="searchText" type="search" placeholder="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            <a href="" style="margin-left: 15px;" id="downloadLink" download>Download CSV</a>
+        </form>
+    </nav>
+    <table v-if="stockData.length > 0" class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Open</th>
+                <th>High</th>
+                <th>Low</th>
+                <th>Close</th>
+            </tr>
+        </thead>
+        <tbody v-if="stockData.length > 0">
+            <template v-for="data in stockData">
+                <tr>
+                    <td>[[ data.name ]]</td>
+                    <td>[[ data.code ]]</td>
+                    <td>[[ data.open ]]</td>
+                    <td>[[ data.high ]]</td>
+                    <td>[[ data.low ]]</td>
+                    <td>[[ data.close ]]</td>
+                </tr>
+            </template>
+        </tbody>
+    </table>
+    <div v-if="searchText && stockData.length == 0" style="font-weight: bold; text-align: center;">
+        Opps! We don't have stock matching with [[ searchText ]]
+    </div>
+{% endblock %}
+{% block external_js %}
+    <!-- Vue app -->
+    <script type="text/javascript">
+        const store = new Vue({
+            el: '#vue-app',
+            delimiters: ['[[', ']]'],
+            data: {
+                stockData: [],
+                lastUpdated: '',
+            },
+            http: {
+                root: '{{ host }}',
+            },
+            methods: {
+                getStocks: function (searchType='all') {
+                    this.getLoading();
+                    this.$http.get('get_data/' + searchType).then(function (data) {
+                        if (data.status === 200) {
+                            this.stockData = data.body.stock_data;
+                            this.lastUpdated = data.body.last_updated;
+                            $('#downloadLink').attr('href', '{{ host }}/download_csv/' + searchType);
+                            this.removeLoading();
+                        }
+                    });
+                },
+                searchStock: function (event) {
+                    const searchText = this.searchText || 'all'
+                    this.getStocks(searchText);
+                    event.preventDefault();
+                },
+                getLoading: function () {
+                    $("#loading-overlay").show();
+                },
+                removeLoading: function () {
+                    $("#loading-overlay").hide();
+                },
+            },
+            beforeMount(){
+                this.getLoading();
+            },
+            mounted: function () {
+                this.getStocks();
+            }
+        })
+    </script>
+{% endblock %}
