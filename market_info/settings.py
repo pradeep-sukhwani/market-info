@@ -26,7 +26,7 @@ SECRET_KEY = '-+cn)q1@zv5g=bec#1^j@&g9#hy$n5@3hpaqxu3im*4_rsk2#xe'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['.herokuapp.com']
+ALLOWED_HOSTS = ['.appspot.com']
 
 # Application definition
 
@@ -139,7 +139,7 @@ CSRF_COOKIE_SECURE = True
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 REDIS_URL = urlparse(os.environ.get("REDIS_URL"))
-LOCAL_HOST = 'https://bhav-market.herokuapp.com'
+LOCAL_HOST = os.environ.get("LOCAL_HOST")
 REDIS_TIME_OUT = 86400
 
 try:

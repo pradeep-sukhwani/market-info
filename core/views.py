@@ -50,22 +50,18 @@ class StockListView(View):
 def download(request, *args, **kwargs):
     headers = ['name', 'code', 'open', 'high', 'low', 'close']
     datetime_today = datetime.today().strftime("%d-%m-%YT%H:%M:%S")
-    file_path = os.path.join(settings.MEDIA_ROOT, f'stock_details_{datetime_today}.csv')
-    # writer = csv.DictWriter(response, fieldnames=headers)
-    with open(file_path, 'w', newline='') as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=headers)
-
-        writer.writeheader()
-        if kwargs.get('stock_name') == 'all':
-            all_keys = redis_instance.keys()
-            for key in all_keys:
-                if key == 'last_updated':
-                    continue
-                writer.writerow(redis_instance.hgetall(key))
-        else:
-            if redis_instance.hgetall(kwargs.get('stock_name')):
-                writer.writerow(redis_instance.hgetall(kwargs.get('stock_name')))
-    with open(os.path.join(settings.MEDIA_ROOT, f'stock_details_{datetime_today}.csv')) as file_obj:
-        response = HttpResponse(file_obj.read(), content_type='text/csv')
-        response['Content-Disposition'] = f'inline; filename={os.path.basename(file_path)}'
+    file_name = f'stock_details_{datetime_today}.csv'
+    response = HttpResponse(content_type='text/csv')
+    writer = csv.DictWriter(response, fieldnames=headers)
+    writer.writeheader()
+    if kwargs.get('stock_name') == 'all':
+        all_keys = redis_instance.keys()
+        for key in all_keys:
+            if key == 'last_updated':
+                continue
+            writer.writerow(redis_instance.hgetall(key))
+    else:
+        if redis_instance.hgetall(kwargs.get('stock_name')):
+            writer.writerow(redis_instance.hgetall(kwargs.get('stock_name')))
+    response['Content-Disposition'] = f'inline; filename={file_name}'
     return response
